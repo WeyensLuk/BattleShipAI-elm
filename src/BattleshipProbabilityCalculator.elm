@@ -3,6 +3,15 @@ module BattleshipProbabilityCalculator exposing (..)
 import Model exposing(Cell, initialBattleshipGrid)
 import Array2D exposing(..)
 
+type Direction = 
+    Vertical | Horizontal
+
+type alias ProbabilityCriteria =
+    { row: Int
+    , column: Int
+    , shipSize: Int
+    , direction: Direction}
+
 calculateProbabilityGrid : Array2D Cell
 calculateProbabilityGrid =
     initialBattleshipGrid.grid 
@@ -19,41 +28,36 @@ calculateProbabilityFor shipSize grid =
 
 permutationsPerCell : Int -> Array2D Cell -> Int -> Int -> Cell -> Cell
 permutationsPerCell shipSize grid row column cell =
-    ({cell | probability =  (checkHorizontalForSize shipSize 1 grid row column)
-                          + (checkVerticalForSize shipSize 1 grid row column) })
+    ({cell | probability =  (checkForShip grid (ProbabilityCriteria row column shipSize Horizontal) 1)
+                          + (checkForShip grid (ProbabilityCriteria row column shipSize Vertical) 1) })
 
-checkHorizontalForSize : Int -> Int -> Array2D Cell -> Int -> Int -> Int
-checkHorizontalForSize shipSize counter grid row column =
-    if shipSize == counter then checkHorizontal shipSize grid row column
-    else checkHorizontal shipSize grid row column +
-        checkHorizontalForSize shipSize (counter + 1) grid (row - 1) column
+checkForShip : Array2D Cell -> ProbabilityCriteria -> Int -> Int
+checkForShip grid criteria counter =
+    if criteria.shipSize == counter then doesShipFit grid criteria criteria.shipSize
+    else doesShipFit grid criteria criteria.shipSize +
+        checkForShip grid (decrementCriteriaByDirection criteria) (counter + 1)
 
-checkVerticalForSize : Int -> Int -> Array2D Cell -> Int -> Int -> Int
-checkVerticalForSize shipSize counter grid row column =
-    if shipSize == counter then checkVertical shipSize grid row column
-    else checkVertical shipSize grid row column +
-        checkVerticalForSize shipSize (counter + 1) grid row (column - 1)
+decrementCriteriaByDirection : ProbabilityCriteria -> ProbabilityCriteria
+decrementCriteriaByDirection criteria = 
+    case criteria.direction of
+        Horizontal -> { criteria | row = criteria.row - 1 }
+        Vertical -> { criteria | column = criteria.column - 1 }
 
-checkHorizontal : Int -> Array2D Cell -> Int -> Int -> Int
-checkHorizontal shipSize grid row column =
+incrementCriteriaByDirection : ProbabilityCriteria -> ProbabilityCriteria
+incrementCriteriaByDirection criteria = 
+    case criteria.direction of
+        Horizontal -> { criteria | row = criteria.row + 1 }
+        Vertical -> { criteria | column = criteria.column + 1 }
+
+doesShipFit : Array2D Cell -> ProbabilityCriteria -> Int -> Int
+doesShipFit grid criteria counter =
     let 
-        cell = get row column grid
+        cell = get criteria.row criteria.column grid
     in 
         case cellIsNotShot cell of 
             True -> 
-                if shipSize == 1 then 1
-                else checkHorizontal (shipSize - 1) grid (row + 1) column
-            False -> 0
-
-checkVertical : Int -> Array2D Cell -> Int -> Int -> Int
-checkVertical shipSize grid row column =
-    let 
-        cell = get row column grid
-    in 
-        case cellIsNotShot cell of 
-            True -> 
-                if shipSize == 1 then 1
-                else checkVertical (shipSize - 1) grid row (column + 1)
+                if counter == 1 then 1
+                else doesShipFit grid (incrementCriteriaByDirection criteria) (counter - 1)
             False -> 0
 
 cellIsNotShot : Maybe Cell -> Bool
