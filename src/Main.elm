@@ -3,6 +3,7 @@ import Model exposing (Model)
 import View exposing (view)
 import Update exposing (update)
 import Msgs exposing (Msg)
+import Commands exposing (calculateProbabilityGrid, randomlyPlacedBattleships)
 
 main : Program Never Model Msg
 main =
@@ -11,7 +12,8 @@ main =
 -- Init
 init : (Model, Cmd Msg)
 init =
-    ( Model.model, Cmd.none )
+    calculateProbabilityGrid
+    ( Model.initialModel randomlyPlacedBattleships, Cmd.none )
 
 -- Subscriptions
 subscriptions : Model -> Sub Msg

@@ -54,4 +54,3 @@ handleResult model result =
 
         Err error ->
             ( model |> Debug.log (toString error), Cmd.none )
-           
