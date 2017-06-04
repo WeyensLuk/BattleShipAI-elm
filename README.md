@@ -1,1 +1,1 @@
-# BattleShipAI-elm
+# BattleShipAI-elm [![Build Status](https://travis-ci.org/WeyensLuk/BattleShipAI-elm.svg?branch=master)](https://travis-ci.org/WeyensLuk/BattleShipAI-elm)
