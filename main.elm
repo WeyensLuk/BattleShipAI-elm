@@ -17,17 +17,27 @@ type alias Battleship =
 type alias Model =
     { playerId: String
     , gameId: String
+    , url: String
     , battleShips: List Battleship
     }
 
 model : Model
 model = 
-    Model "" "" []
+    Model "" "" "http://localhost:8000" [ Battleship ["A1", "A2"]
+                                        , Battleship ["B1", "B2", "B3"]
+                                        , Battleship ["C1", "C2", "C3"]
+                                        , Battleship ["D1", "D2", "D3", "D4"]
+                                        , Battleship ["E1", "E2", "E3", "E4", "E5"]
+                                        ]
+
+battleShipRefereeUrl : String
+battleShipRefereeUrl =
+    "http://localhost:50095/Register"
 
 -- Init
 init : (Model, Cmd Msg)
 init =
-    ( model, Cmd.none)
+    ( model, Cmd.none )
 
 -- Subscriptions
 subscriptions : Model -> Sub Msg
@@ -48,6 +58,7 @@ registerGame model url =
                 |> jsonEncode
                 |> Http.jsonBody
     in
+        Debug.log (toString body)
         Http.post url body msgDecoder
 
 jsonEncode : Model -> Encode.Value
@@ -55,7 +66,17 @@ jsonEncode model =
     Encode.object
         [ ("PlayerId", Encode.string model.playerId)
         , ("GameId", Encode.string model.gameId)
+        , ("BattleShips", model.battleShips 
+                            |> List.map (jsonEncodeBattleShip) 
+                            |> Encode.list)
         ]
+
+jsonEncodeBattleShip : Battleship -> Encode.Value
+jsonEncodeBattleShip battleShip =
+    Encode.object
+    [ ("Fields", battleShip.fields
+                    |> List.map (\field -> (Encode.string field))
+                    |> Encode.list) ]
 
 registerGameCmd : Model -> String -> Cmd Msg
 registerGameCmd model url =
@@ -80,7 +101,7 @@ type Msg
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case msg of
+  case Debug.log (toString msg) msg of
     PlayerId playerId -> 
     ( { model | playerId = playerId }, Cmd.none )
 
@@ -88,7 +109,7 @@ update msg model =
     ( { model | gameId = gameId }, Cmd.none )
 
     RegisterGame ->
-    ( model, registerGameCmd model "http://localhost:50095/Register")
+    ( model, registerGameCmd model battleShipRefereeUrl)
 
     HandleResult result ->
         handleResult model result
