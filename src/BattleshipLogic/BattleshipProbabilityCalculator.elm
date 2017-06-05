@@ -1,4 +1,4 @@
-module BattleshipProbabilityCalculator exposing (..)
+module BattleshipLogic.BattleshipProbabilityCalculator exposing (..)
 
 import Model exposing(Cell, initialBattleshipGrid)
 import Array2D exposing(..)
