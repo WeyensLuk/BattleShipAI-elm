@@ -3,6 +3,7 @@ module BattleshipProbabilityCalculatorTests exposing (..)
 import Test exposing (..)
 import Expect
 import BattleshipLogic.BattleshipProbabilityCalculator exposing (..)
+import BattleshipLogic.BattleshipTypes exposing(..)
 import Model exposing(BattleshipGrid, Cell)
 import Array2D exposing(..)
 
